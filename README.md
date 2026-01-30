@@ -1,177 +1,193 @@
-# Kafka Producer API with SASL Authentication
+# Quick Start Guide
 
-Modular Node.js Kafka producer with REST API, deployed in Kubernetes.
+Three ways to run the Kafka Producer API:
 
-## 🚀 Quick Start
+---
 
-### Deploy to Minikube
+## Option 1: Minikube (Kubernetes) ⭐ Recommended
+
+**Prerequisites:** Kafka running in Minikube
+
+### Deploy
 ```bash
 ./deploy-minikube.sh
 ```
 
-### Get API URL
+### Get URL
 ```bash
 minikube service kafka-producer-api --url
-# Output: http://127.0.0.1:52640
+# Output: http://127.0.0.1:XXXXX
 ```
 
 ### Test
 ```bash
-# Health check
-curl http://127.0.0.1:52640/health
-
-# Publish message
-curl -X POST http://127.0.0.1:52640/api/publish \
-  -H "Content-Type: application/json" \
-  -d '{"topic":"test-topic","message":"Hello Kafka"}'
+URL=$(minikube service kafka-producer-api --url)
+curl $URL/health
+curl -X POST $URL/api/publish -H "Content-Type: application/json" -d '{"topic":"test-topic","message":"Hello"}'
 ```
 
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| GET | `/api/docs` | API documentation |
-| POST | `/api/publish` | Publish single message |
-| POST | `/api/publish/bulk` | Publish multiple messages |
-| POST | `/api/publish/batch` | Publish to multiple topics |
-| GET | `/api/metadata` | Get Kafka metadata |
-
-## 🔧 Configuration
-
-**SASL Authentication:**
-- Broker: `kafka-sasl:9092`
-- Username: `kafka-client`
-- Password: `client-secret`
-- Mechanism: `PLAIN`
-
-Configuration file: `.env`
-
-## 📦 Project Structure
-
-```
-kafka-producer/
-├── src/
-│   ├── config/kafka.config.js    # Configuration management
-│   ├── kafka/producer.js         # Producer class
-│   ├── api-server.js             # Express API server
-│   └── index.js                  # Module export
-├── k8s/
-│   ├── deployment.yaml           # Kubernetes deployment
-│   └── service.yaml              # Kubernetes service
-├── examples/                     # Usage examples
-├── .env                          # Configuration
-├── Dockerfile                    # Container image
-├── deploy.sh                     # Deployment script
-└── package.json
-```
-
-## 🧪 API Examples
-
-### Simple Message
+### Update After Code Changes
 ```bash
-curl -X POST http://127.0.0.1:52640/api/publish \
-  -H "Content-Type: application/json" \
-  -d '{"topic":"test-topic","message":"Hello"}'
+# Bump version in deployment.yaml (v3 -> v4)
+docker build --no-cache -t kafka-producer-api:v4 .
+minikube image load kafka-producer-api:v4
+# Edit k8s/deployment.yaml: change image tag to v4
+kubectl apply -f k8s/deployment.yaml
 ```
 
-### Message with Key
+---
+
+## Option 2: Local Machine (No Docker)
+
+**Prerequisites:**
+- Node.js installed
+- Kafka accessible (use port-forward if in Kubernetes)
+
+### Setup Port-Forward (if Kafka is in Kubernetes)
 ```bash
-curl -X POST http://127.0.0.1:52640/api/publish \
-  -H "Content-Type: application/json" \
-  -d '{"topic":"user-events","key":"user-123","message":{"userId":"123","event":"login"}}'
+kubectl port-forward svc/kafka-sasl 9092:9092
 ```
 
-### Message with Headers
-```bash
-curl -X POST http://127.0.0.1:52640/api/publish \
-  -H "Content-Type: application/json" \
-  -d '{"topic":"orders","key":"order-456","message":{"orderId":"456","amount":99.99},"headers":{"source":"api","correlation-id":"abc-123"}}'
+### Configure
+Edit `.env`:
+```env
+KAFKA_BROKERS=localhost:9092
+KAFKA_SASL_USERNAME=kafka-client
+KAFKA_SASL_PASSWORD=client-secret
 ```
 
-### Bulk Messages
-```bash
-curl -X POST http://127.0.0.1:52640/api/publish/bulk \
-  -H "Content-Type: application/json" \
-  -d '{"topic":"test-topic","messages":["Message 1","Message 2","Message 3"]}'
-```
-
-### Multiple Topics
-```bash
-curl -X POST http://127.0.0.1:52640/api/publish/batch \
-  -H "Content-Type: application/json" \
-  -d '{"topicMessages":[{"topic":"topic-1","messages":[{"key":"key1","value":"msg1"}]},{"topic":"topic-2","messages":[{"key":"key2","value":"msg2"}]}]}'
-```
-
-## 🔍 Kubernetes Commands
-
-```bash
-# Check pod status
-kubectl get pods -l app=kafka-producer-api
-
-# View logs
-kubectl logs -l app=kafka-producer-api -f
-
-# Get service info
-kubectl get svc kafka-producer-api
-
-# Restart deployment
-kubectl rollout restart deployment/kafka-producer-api
-
-# Delete deployment
-kubectl delete -f k8s/
-```
-
-## 🔄 Update Deployment
-
-After code changes:
-```bash
-./deploy-minikube.sh
-```
-
-## 📝 Use as Module
-
-You can also import and use the producer directly:
-
-```javascript
-const KafkaProducer = require('./src/kafka/producer');
-
-const producer = new KafkaProducer({
-  brokers: ['kafka-sasl:9092'],
-  saslEnabled: true,
-  saslUsername: 'kafka-client',
-  saslPassword: 'client-secret'
-});
-
-await producer.connect();
-await producer.send('topic', { value: 'message' });
-await producer.disconnect();
-```
-
-## 📊 Features
-
-- ✅ SASL/PLAIN authentication
-- ✅ REST API for easy integration
-- ✅ Batch messaging support
-- ✅ Custom headers and keys
-- ✅ Auto-retry mechanism
-- ✅ Kubernetes deployment
-- ✅ Health checks
-- ✅ Modular and reusable
-
-## 🛠️ Development
-
-Run locally (requires Kafka access):
+### Run
 ```bash
 npm install
 npm start
 ```
 
-Run examples:
+### Test
 ```bash
-node examples/simple-producer.js
+curl http://localhost:3000/health
+curl -X POST http://localhost:3000/api/publish \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"test-topic","message":"Hello"}'
 ```
 
-## License
+### Stop
+```
+Ctrl+C
+```
 
-ISC
+---
+
+## Option 3: Docker (Local Container)
+
+**Prerequisites:** Docker installed
+
+### Build
+```bash
+docker build -t kafka-producer-api:local .
+```
+
+### Run
+```bash
+# If Kafka is in Kubernetes
+kubectl port-forward svc/kafka-sasl 9092:9092
+
+# Run container (in another terminal)
+docker run --rm -p 3000:3000 \
+  -e KAFKA_BROKERS=host.docker.internal:9092 \
+  -e KAFKA_SASL_USERNAME=kafka-client \
+  -e KAFKA_SASL_PASSWORD=client-secret \
+  kafka-producer-api:local
+```
+
+### Test
+```bash
+curl http://localhost:3000/health
+curl -X POST http://localhost:3000/api/publish \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"test-topic","message":"Hello"}'
+```
+
+### Stop
+```
+Ctrl+C
+```
+
+---
+
+## Comparison
+
+| Method | Pros | Cons | Best For |
+|--------|------|------|----------|
+| **Minikube** | Production-like, auto-restart, service discovery | Requires K8s knowledge | Production simulation |
+| **Local Machine** | Fast iteration, easy debugging | Manual start/stop | Development |
+| **Docker** | Isolated environment, consistent | Extra build step | Testing |
+
+---
+
+## Common Commands
+
+### View Logs
+```bash
+# Minikube
+kubectl logs -l app=kafka-producer-api -f
+
+# Local/Docker
+# Logs appear in terminal
+```
+
+### Check Kafka Connection
+```bash
+# All methods
+curl http://localhost:3000/health
+# or
+curl $(minikube service kafka-producer-api --url)/health
+```
+
+### Publish Test Message
+```bash
+# Replace URL with your endpoint
+curl -X POST http://localhost:3000/api/publish \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"test-topic","message":"Test message"}'
+```
+
+---
+
+## Troubleshooting
+
+### "Connection refused" or "ECONNREFUSED"
+- **Minikube:** Check pod is running: `kubectl get pods -l app=kafka-producer-api`
+- **Local:** Ensure port-forward is running: `kubectl port-forward svc/kafka-sasl 9092:9092`
+- **Docker:** Use `host.docker.internal` instead of `localhost`
+
+### "Authentication failed"
+- Verify credentials in `.env` match Kafka configuration
+- Check Kafka JAAS config: `kubectl exec -it <kafka-pod> -- cat /etc/kafka/secrets/jaas.conf`
+
+### "kafka-sasl not found" (Local only)
+- Using Kubernetes Kafka? Must use port-forward to localhost:9092
+- Or add to `/etc/hosts`: `echo "127.0.0.1 kafka-sasl" | sudo tee -a /etc/hosts`
+
+---
+
+## Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `KAFKA_BROKERS` | Kafka broker addresses | `localhost:9092` or `kafka-sasl:9092` |
+| `KAFKA_SASL_USERNAME` | SASL username | `kafka-client` |
+| `KAFKA_SASL_PASSWORD` | SASL password | `client-secret` |
+| `KAFKA_SASL_ENABLED` | Enable SASL auth | `true` |
+| `KAFKA_DEFAULT_TOPIC` | Default topic | `test-topic` |
+| `PORT` | API server port | `3000` |
+
+---
+
+## Next Steps
+
+1. ✅ Choose your deployment method
+2. ✅ Start the API
+3. ✅ Test with curl or Postman
+4. ✅ Check README.md for full API documentation
+
+**API Docs:** `GET /api/docs`
