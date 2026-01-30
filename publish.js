@@ -6,6 +6,9 @@ async function publishMessage() {
   const kafka = new Kafka({
     clientId: process.env.KAFKA_CLIENT_ID || 'simple-producer',
     brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
+    ssl: process.env.KAFKA_SSL_ENABLED === 'true' ? {
+      rejectUnauthorized: process.env.KAFKA_SSL_REJECT_UNAUTHORIZED !== 'false',
+    } : false,
     sasl: process.env.KAFKA_SASL_ENABLED === 'true' ? {
       mechanism: process.env.KAFKA_SASL_MECHANISM || 'plain',
       username: process.env.KAFKA_SASL_USERNAME,

@@ -29,10 +29,19 @@ Edit `.env`:
 
 ```env
 KAFKA_BROKERS=localhost:9092
+
+# Enable SSL/TLS
+KAFKA_SSL_ENABLED=true
+
+# SASL Authentication
+KAFKA_SASL_ENABLED=true
 KAFKA_SASL_USERNAME=kafka-client
 KAFKA_SASL_PASSWORD=client-secret
+
 KAFKA_TOPIC=test-topic
 ```
+
+**For TLS/SSL:** Set `KAFKA_SSL_ENABLED=true`
 
 ## Connect to Kafka in Kubernetes
 
