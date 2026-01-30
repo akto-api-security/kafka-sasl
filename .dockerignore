@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+*.md
+examples
+test-connection.js
+.git
+.gitignore
+Dockerfile
+k8s

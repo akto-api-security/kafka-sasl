@@ -1,0 +1,31 @@
+{
+  "name": "kafka-producer",
+  "version": "1.0.0",
+  "description": "Modular and configurable Kafka producer with SASL authentication",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/api-server.js",
+    "dev": "nodemon src/api-server.js",
+    "test": "node test-connection.js",
+    "example": "node examples/simple-producer.js"
+  },
+  "keywords": [
+    "kafka",
+    "producer",
+    "sasl",
+    "messaging"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.2"
+  }
+}
