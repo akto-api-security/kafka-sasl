@@ -10,7 +10,7 @@ Three ways to run the Kafka Producer API:
 
 ### Deploy
 ```bash
-./deploy.sh
+./deploy-minikube.sh
 ```
 
 ### Get URL

@@ -4,9 +4,9 @@ Modular Node.js Kafka producer with REST API, deployed in Kubernetes.
 
 ## 🚀 Quick Start
 
-### Deploy to Kubernetes
+### Deploy to Minikube
 ```bash
-./deploy.sh
+./deploy-minikube.sh
 ```
 
 ### Get API URL
@@ -126,7 +126,7 @@ kubectl delete -f k8s/
 
 After code changes:
 ```bash
-./deploy.sh
+./deploy-minikube.sh
 ```
 
 ## 📝 Use as Module
